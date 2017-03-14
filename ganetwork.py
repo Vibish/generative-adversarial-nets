@@ -15,6 +15,8 @@ import random
 from matplotlib import colors as mcolors
 from math import sqrt
 from IPython import display
+from sklearn.svm import SVC
+from sklearn.metrics import roc_auc_score
 
 
 OPTIMIZER = tf.train.AdamOptimizer()
@@ -94,10 +96,10 @@ def define_optimization(optimizer, loss, model_parameters):
 
 def split_data(X, y, validation_split):
     n_samples = X.shape[0]
-    permuted_indices = np.random.permutation(range(n_samples))
+    X_shuffled, y_shuffled = shuffle_data(X, y)
     n_validation_indices = np.floor(validation_split * n_samples).astype(int)
-    X_val, y_val = X[:n_validation_indices], y[:n_validation_indices] if y is not None else None
-    X_train, y_train = X[n_validation_indices:], y[n_validation_indices:] if y is not None else None
+    X_val, y_val = X_shuffled[:n_validation_indices], y_shuffled[:n_validation_indices] if y is not None else None
+    X_train, y_train = X_shuffled[n_validation_indices:], y_shuffled[n_validation_indices:] if y is not None else None
     return X_train, y_train, X_val, y_val
 
 def shuffle_data(X, y):
@@ -232,7 +234,7 @@ class BaseGAN:
                     ax[ind].axis('off')
                 plt.show()
                 
-            if 'plot2d_data':
+            if 'plot2d_data' in options:
                 n_samples = kwargs['n_samples']
                 feature_index1, feature_index2 = kwargs['feature_index1'], kwargs['feature_index2']
                 if self.n_y_features == 0:
@@ -240,17 +242,17 @@ class BaseGAN:
                 else:
                     class_label = kwargs['class_label']
                     X_generated = self.generate_samples(n_samples, class_label)
-                X1 = np.concatenate([X[:, feature_index1], X_generated[:, feature_index1]])
-                X2 = np.concatenate([X[:, feature_index2], X_generated[:, feature_index2]])
+                X1 = np.concatenate([X_train[:, feature_index1], X_generated[:, feature_index1]])
+                X2 = np.concatenate([X_train[:, feature_index2], X_generated[:, feature_index2]])
                 pl.clf()
                 if self.n_y_features == 0:
-                    pl.scatter(X1, X2, c=X.shape[0] * ['blue'] + n_samples * ['red'])
+                    pl.scatter(X1, X2, c=X_train.shape[0] * ['blue'] + n_samples * ['red'])
                 else:
                     random.seed(a=1)
                     random_colors = random.choices(list(mcolors.cnames.keys()), k=self.n_y_features + 1 if self.n_y_features > 1 else 3)
                     generated_color, *class_colors = random_colors
                     generated_color = np.array(n_samples * [generated_color])
-                    class_colors = np.array(class_colors)[y.argmax(axis=1) if self.n_y_features > 1 else y.reshape(-1)]
+                    class_colors = np.array(class_colors)[y_train.argmax(axis=1) if self.n_y_features > 1 else y_train.reshape(-1)]
                     colors = np.concatenate([class_colors, generated_color])
                     pl.scatter(X1, X2, c=colors)
                 pl.xlabel('Feature 1'), pl.ylabel('Feature 2')
@@ -289,6 +291,7 @@ class GAN(BaseGAN):
         X_train, y_train, X_val, y_val = split_data(X, None, validation_split)
         super()._initialize_training_parameters(X_train, y_train, batch_size)
         for epoch in range(nb_epoch):
+            X_train, y_train = shuffle_data(X_train, y_train)
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
@@ -337,6 +340,7 @@ class CGAN(BaseGAN):
         X_train, y_train, X_val, y_val = split_data(X, y, validation_split)
         super()._initialize_training_parameters(X_train, y_train, batch_size)
         for epoch in range(nb_epoch):
+            X_train, y_train = shuffle_data(X_train, y_train)
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
@@ -350,3 +354,22 @@ class CGAN(BaseGAN):
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
+    
+    def _logging_info(self, X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs):
+        super()._logging_info(X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs)
+        if 'evaluate_oversampling' in options:
+            if epoch == 0:
+                self.clf = SVC(probability=True)
+                self.clf.fit(X_train, y_train.reshape(-1))
+                self.unbalanced_data_auc = roc_auc_score(y_val, self.clf.predict_proba(X_val)[:, 1])
+            if epoch % logging_steps == 0:
+                n_samples = kwargs['n_samples']
+                class_label = kwargs['class_label']
+                X_generated = self.generate_samples(n_samples, class_label)
+                X_over = np.concatenate([X_train, X_generated])
+                y_over = np.concatenate([y_train.reshape(-1), np.array(n_samples * [class_label])])
+                self.clf.fit(X_over, y_over)
+                self.balanced_data_auc =  roc_auc_score(y_val, self.clf.predict_proba(X_val)[:, 1])
+                print('Epoch: {}\nUnbalanced data validation AUC: {:.3f}\nBalanced data validation AUC: {:.3f}\n'.format(epoch, self.unbalanced_data_auc, self.balanced_data_auc))
+
+                
