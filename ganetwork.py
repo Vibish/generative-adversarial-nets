@@ -15,7 +15,7 @@ import random
 from matplotlib import colors as mcolors
 from math import sqrt
 from IPython import display
-from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 
 
@@ -358,13 +358,13 @@ class CGAN(BaseGAN):
     def _logging_info(self, X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs):
         super()._logging_info(X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs)
         if 'evaluate_oversampling' in options:
+            n_samples = kwargs['n_samples']
+            class_label = kwargs['class_label']
             if epoch == 0:
-                self.clf = SVC(probability=True)
+                self.clf = LogisticRegression()
                 self.clf.fit(X_train, y_train.reshape(-1))
                 self.unbalanced_data_auc = roc_auc_score(y_val, self.clf.predict_proba(X_val)[:, 1])
             if epoch % logging_steps == 0:
-                n_samples = kwargs['n_samples']
-                class_label = kwargs['class_label']
                 X_generated = self.generate_samples(n_samples, class_label)
                 X_over = np.concatenate([X_train, X_generated])
                 y_over = np.concatenate([y_train.reshape(-1), np.array(n_samples * [class_label])])
