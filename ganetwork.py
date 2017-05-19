@@ -144,7 +144,7 @@ class BaseGAN:
                        generator_weights_initilization_choice='xavier',
                        generator_bias_initilization_choice='zeros'):
         self.n_Z_features = n_Z_features
-        self.discriminator_hidden__layers = discriminator_hidden_layers
+        self.discriminator_hidden_layers = discriminator_hidden_layers
         self.generator_hidden_layers = generator_hidden_layers
         self.discriminator_optimizer = discriminator_optimizer
         self.generator_optimizer = generator_optimizer
@@ -158,8 +158,8 @@ class BaseGAN:
         self.n_X_features = X.shape[1]
         self.n_y_features = y.shape[1] if y is not None else 0
 
-        self.discriminator_layers = [(self.n_X_features + self.n_y_features, None)] + self.discriminator_hidden__layers + [(1, None)]
-        self.generator_layers = [(self.n_Z_features + self.n_y_features, None)] + self.discriminator_hidden__layers + [(self.n_X_features, None)]
+        self.discriminator_layers = [(self.n_X_features + self.n_y_features, None)] + self.discriminator_hidden_layers + [(1, None)]
+        self.generator_layers = [(self.n_Z_features + self.n_y_features, None)] + self.discriminator_hidden_layers + [(self.n_X_features, None)]
 
         self.y_placeholder = tf.placeholder(tf.float32, [None, self.n_y_features]) if y is not None else None
         self.X_placeholder, self.discriminator_parameters = initialize_model(self.discriminator_layers, self.n_y_features, self.discriminator_weights_initilization_choice, self.discriminator_bias_initilization_choice)
@@ -243,24 +243,26 @@ class GAN(BaseGAN):
     """
     Parameters
     ----------
-    discriminator_layers : list of (int, activation function) tuples
+    n_Z_features : int
+        Number of features of the Z noise space.
+    discriminator_hidden_layers : list of (int, activation function) tuples
         Each tuple represents the number of neurons and the activation 
-        function of the discriminator's corresponding layer. The 
-        number of neurons and the activation function for the first 
-        layer should be equal to (X.shape[1], None) while the number 
-        of neurons and the activation function for the last layer should 
-        be equal to (1, None), where X is the input data.
-    generator_layers : list of (int, activation function) tuples
+        function of the discriminator's corresponding hidden layer.
+    generator_hidden_layers : list of (int, activation function) tuples
         Each tuple represents the number of neurons and the activation 
-        function of the generators's corresponding layer. The 
-        number of neurons and the activation function for the first 
-        layer should be equal (Z.shape[1], None)while the number of neurons 
-        and the activation function for the last layer should be equal to 
-        (X.shape[1], None), where X is the input data.
-    discriminator_optimizer: TensorFlow optimizer
+        function of the generators's corresponding hidden layer.
+    discriminator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the discriminator.
-    generator_optimizer: TensorFlow optimizer
+    generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
+    discriminator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+        The initialization type of the discriminator's weights.
+    discriminator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+        The initialization type of the discriminator's bias.
+    generator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+        The initialization type of the discriminator's weights.
+    generator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+        The initialization type of the generator's bias.
     """
 
     def train(self, X, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
@@ -289,26 +291,26 @@ class CGAN(BaseGAN):
     """
     Parameters
     ----------
-    discriminator_layers : list of (int, activation function) tuples
+    n_Z_features : int
+        Number of features of the Z noise space.
+    discriminator_hidden_layers : list of (int, activation function) tuples
         Each tuple represents the number of neurons and the activation 
-        function of the discriminator's corresponding layer. The number 
-        of neurons and the activation function for the first layer should 
-        be equal to (X.shape[1] + n_y_features, None) while the number of 
-        neurons and the activation function for the last layer should be 
-        equal to (1, None), where X is the input data and n_y_features is 
-        the number of y matrix features.
-    generator_layers : list of (int, activation function) tuples
+        function of the discriminator's corresponding hidden layer.
+    generator_hidden_layers : list of (int, activation function) tuples
         Each tuple represents the number of neurons and the activation 
-        function of the generators's corresponding layer. The number 
-        of neurons and the activation function for the first layer should 
-        be equal to (Z.shape[1] + n_y_features, None) while the number of 
-        neurons and the activation function for the last layer should be 
-        equal to (X.shape[1], None), where X is the input data and n_y_features 
-        is the number of y matrix features.
-    discriminator_optimizer: TensorFlow optimizer
+        function of the generators's corresponding hidden layer.
+    discriminator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the discriminator.
-    generator_optimizer: TensorFlow optimizer
+    generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
+    discriminator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+        The initialization type of the discriminator's weights.
+    discriminator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+        The initialization type of the discriminator's bias.
+    generator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+        The initialization type of the discriminator's weights.
+    generator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+        The initialization type of the generator's bias.
     """
 
     def train(self, X, y, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
