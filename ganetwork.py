@@ -329,22 +329,4 @@ class CGAN(BaseGAN):
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
-    
-    def _logging_info(self, X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs):
-        super()._logging_info(X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs)
-        if 'evaluate_oversampling' in options:
-            n_samples = kwargs['n_samples']
-            class_label = kwargs['class_label']
-            if epoch == 0:
-                self.clf = LogisticRegression()
-                self.clf.fit(X_train, y_train.reshape(-1))
-                self.unbalanced_data_auc = roc_auc_score(y_val, self.clf.predict_proba(X_val)[:, 1])
-            if epoch % logging_steps == 0:
-                X_generated = self.generate_samples(n_samples, class_label)
-                X_over = np.concatenate([X_train, X_generated])
-                y_over = np.concatenate([y_train.reshape(-1), np.array(n_samples * [class_label])])
-                self.clf.fit(X_over, y_over)
-                self.balanced_data_auc =  roc_auc_score(y_val, self.clf.predict_proba(X_val)[:, 1])
-                print('Epoch: {}\nUnbalanced data validation AUC: {:.3f}\nBalanced data validation AUC: {:.3f}\n'.format(epoch, self.unbalanced_data_auc, self.balanced_data_auc))
-
                 
