@@ -84,6 +84,7 @@ def cross_entropy(logits, positive_class_labels):
     return loss
 
 def accuracy(logits, positive_class_labels):
+    """Returns the classification accuracy."""
     if positive_class_labels:
         result = tf.reduce_mean(tf.cast(tf.greater_equal(tf.sigmoid(logits), 0.5), tf.float32))
     else:
