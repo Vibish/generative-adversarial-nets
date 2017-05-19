@@ -272,7 +272,7 @@ class GAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, None, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps, **kwargs)
+            self._logging_info(X, None, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps)
         return self
             
     def generate_samples(self, n_samples):
@@ -321,7 +321,7 @@ class CGAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps, **kwargs)
+            self._logging_info(X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps)
         return self
 
     def generate_samples(self, n_samples, class_label):
