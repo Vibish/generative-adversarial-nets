@@ -268,7 +268,8 @@ class GAN(BaseGAN):
     def train(self, X, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the GAN with X as the input data for nb_epoch number of epochs, 
         batch_size the size of the mini batch and discriminator_steps as the number 
-        of discriminator gradient updates for each generator gradient update."""
+        of discriminator gradient updates for each generator gradient update. Logging 
+        options ('print_accuracy' and 'plot_images') and logging steps are included."""
         X_train, y_train, X_val, y_val = split_data(X, None, validation_split)
         super()._initialize_training_parameters(X_train, y_train, batch_size)
         for epoch in range(nb_epoch):
@@ -316,8 +317,9 @@ class CGAN(BaseGAN):
     def train(self, X, y, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the Conditional GAN with X as the input data, y the one-hot
         encoded class labels for nb_epoch number of epochs, batch_size the size 
-        of the mini batch, discriminator_steps as the number of discriminator 
-        gradient updates for each generator gradient update."""
+        of the mini batch and discriminator_steps as the number of discriminator 
+        gradient updates for each generator gradient update. Logging 
+        options ('print_accuracy' and 'plot_images') and logging steps are included."""
         X_train, y_train, X_val, y_val = split_data(X, y, validation_split)
         super()._initialize_training_parameters(X_train, y_train, batch_size)
         for epoch in range(nb_epoch):
