@@ -204,9 +204,9 @@ class BaseGAN:
         if is_tensor:
             return task_total / n_samples
 
-    def _logging_info(self, X, y, X_train, y_train, X_val, y_val, options, epoch, batch_size, logging_steps, **kwargs):
+    def _logging_info(self, X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps):
         if epoch % logging_steps == 0:
-            if 'print_accuracy' in options:
+            if 'print_accuracy' in logging_options:
                 accuracy_mixed_training_data = self._run_epoch_task(X_train, y_train, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
                 accuracy_generated_data = self._run_epoch_task(X_train, y_train, batch_size, self.accuracy_generated_data, self.generator_placeholders)
                 accuracy_mixed_validation_data = None
@@ -219,7 +219,7 @@ class BaseGAN:
                     msg += '\nDiscriminator accuracy on ' + key + ' data: {:.3f}'
                 print((msg + '\n').format(epoch, *accuracy_types.values()))
         
-            if 'plot_images' in options:
+            if 'plot_images' in logging_options:
                 n_samples = kwargs['n_samples']
                 if self.n_y_features == 0:
                     X_generated = self.generate_samples(n_samples)
@@ -259,7 +259,7 @@ class GAN(BaseGAN):
         The optimizer for the generator.
     """
 
-    def train(self, X, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
+    def train(self, X, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the GAN with X as the input data for nb_epoch number of epochs, 
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update."""
@@ -307,7 +307,7 @@ class CGAN(BaseGAN):
         The optimizer for the generator.
     """
 
-    def train(self, X, y, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
+    def train(self, X, y, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the Conditional GAN with X as the input data, y the one-hot
         encoded class labels for nb_epoch number of epochs, batch_size the size 
         of the mini batch, discriminator_steps as the number of discriminator 
