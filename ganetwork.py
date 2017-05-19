@@ -207,6 +207,8 @@ class BaseGAN:
             return task_total / n_samples
 
     def _logging_info(self, X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps):
+        """Private method that logs the clasification accuracy during training 
+        and/or plots a sample of the generated image data."""
         if epoch % logging_steps == 0:
             if 'print_accuracy' in logging_options:
                 accuracy_mixed_training_data = self._run_epoch_task(X_train, y_train, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
