@@ -265,7 +265,7 @@ class GAN(BaseGAN):
         The initialization type of the generator's bias.
     """
 
-    def train(self, X, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
+    def train(self, X, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the GAN with X as the input data for nb_epoch number of epochs, 
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update."""
@@ -313,7 +313,7 @@ class CGAN(BaseGAN):
         The initialization type of the generator's bias.
     """
 
-    def train(self, X, y, nb_epoch, batch_size, validation_split=0.0, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
+    def train(self, X, y, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1):
         """Trains the Conditional GAN with X as the input data, y the one-hot
         encoded class labels for nb_epoch number of epochs, batch_size the size 
         of the mini batch, discriminator_steps as the number of discriminator 
