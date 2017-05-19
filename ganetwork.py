@@ -29,6 +29,7 @@ def bind_columns(tensor1, tensor2):
     return tf.concat(axis=1, values=[tensor1, tensor2])
 
 def initialize_model_parameters(n_input_units, n_output_units, initialization_choice):
+    """Returns an initialization type of model parameters."""
     shape = [n_input_units, n_output_units] if n_output_units is not None else [n_input_units]
     initialization_types = {'xavier': tf.random_normal(shape=shape, stddev=1. / tf.sqrt(n_input_units / 2.)), 
                             'normal': tf.random_normal(shape=shape), 
