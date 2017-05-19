@@ -233,31 +233,6 @@ class BaseGAN:
                     ax[ind].imshow(X_img[ind], cmap='gray_r')
                     ax[ind].axis('off')
                 plt.show()
-                
-            if 'plot2d_data' in options:
-                n_samples = kwargs['n_samples']
-                feature_index1, feature_index2 = kwargs['feature_index1'], kwargs['feature_index2']
-                if self.n_y_features == 0:
-                    X_generated = self.generate_samples(n_samples)
-                else:
-                    class_label = kwargs['class_label']
-                    X_generated = self.generate_samples(n_samples, class_label)
-                X1 = np.concatenate([X_train[:, feature_index1], X_generated[:, feature_index1]])
-                X2 = np.concatenate([X_train[:, feature_index2], X_generated[:, feature_index2]])
-                pl.clf()
-                if self.n_y_features == 0:
-                    pl.scatter(X1, X2, c=X_train.shape[0] * ['blue'] + n_samples * ['red'])
-                else:
-                    random.seed(a=1)
-                    random_colors = random.choices(list(mcolors.cnames.keys()), k=self.n_y_features + 1 if self.n_y_features > 1 else 3)
-                    generated_color, *class_colors = random_colors
-                    generated_color = np.array(n_samples * [generated_color])
-                    class_colors = np.array(class_colors)[y_train.argmax(axis=1) if self.n_y_features > 1 else y_train.reshape(-1)]
-                    colors = np.concatenate([class_colors, generated_color])
-                    pl.scatter(X1, X2, c=colors)
-                pl.xlabel('Feature 1'), pl.ylabel('Feature 2')
-                display.display(pl.gcf())
-                display.clear_output(wait=True)
 
 
 class GAN(BaseGAN):
