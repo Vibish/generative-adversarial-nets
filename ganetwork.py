@@ -10,13 +10,7 @@ Adversarial Networks (CGAN).
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import pylab as pl
-import random
-from matplotlib import colors as mcolors
 from math import sqrt
-from IPython import display
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
 
 
 OPTIMIZER = tf.train.AdamOptimizer()
