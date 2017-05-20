@@ -192,7 +192,7 @@ class BaseGAN:
         if is_tensor:
             return task_total / n_samples
 
-    def _logging_info(self, X, y, epoch, batch_size, logging_options, logging_steps):
+    def _logging_info(self, X, y, epoch, batch_size, logging_options, logging_steps, **kwargs):
         """Private method that logs the clasification accuracy during training 
         and/or plots a sample of the generated image data."""
         if epoch % logging_steps == 0:
@@ -257,7 +257,7 @@ class GAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, None, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X, None, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps)
+            self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
             
     def generate_samples(self, n_samples):
@@ -305,7 +305,7 @@ class CGAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, y, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
             self._run_epoch_task(X, y, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps)
+            self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
 
     def generate_samples(self, n_samples, class_label):
