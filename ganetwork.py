@@ -197,9 +197,9 @@ class BaseGAN:
         and/or plots a sample of the generated image data."""
         if epoch % logging_steps == 0:
             if 'print_accuracy' in logging_options:
-                accuracy_mixed_training_data = self._run_epoch_task(X, y, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
+                accuracy_mixed_data = self._run_epoch_task(X, y, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
                 accuracy_generated_data = self._run_epoch_task(X, y, batch_size, self.accuracy_generated_data, self.generator_placeholders)
-                accuracy_types = {'mixed training': accuracy_mixed_training_data, 'generated': accuracy_generated_data}
+                accuracy_types = {'mixed training': accuracy_mixed_data, 'generated': accuracy_generated_data}
                 msg = 'Epoch: {}'
                 for key in accuracy_types.keys():
                     msg += '\nDiscriminator accuracy on ' + key + ' data: {:.3f}'
