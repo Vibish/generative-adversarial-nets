@@ -7,6 +7,7 @@ Adversarial Networks (CGAN).
 
 # Author: Georgios Douzas <gdouzas@icloud.com>
 
+import os
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -206,7 +207,7 @@ class BaseGAN:
                     msg += '\nDiscriminator accuracy on ' + key + ' data: {:.3f}'
                 print((msg + '\n').format(epoch, *accuracy_types.values()))
             
-            if 'plot_images' in logging_options:
+            if 'plot_images' in logging_options or 'save_images' in logging_options:
                 n_samples = kwargs['n_samples']
                 if self.n_y_features == 0:
                     X_generated = self.generate_samples(n_samples)
@@ -219,9 +220,15 @@ class BaseGAN:
                     ax = plt.subplot(gs[ind])
                     plt.axis('off')
                     plt.imshow(X_generated[ind].reshape(img_dim, -1), cmap='gray_r')
-                plt.show()
+                if 'save_images' in logging_options:
+                    if not os.path.exists('images-output'):
+                        os.makedirs('images-output')
+                    plt.savefig('images-output/epoch_{}.png'.format(str(epoch)))
+                if 'plot_images' in logging_options:
+                    plt.show()
+                plt.close(fig)
                 
-
+                
 class GAN(BaseGAN):
     """
     Parameters
