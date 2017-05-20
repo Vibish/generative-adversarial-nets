@@ -96,14 +96,6 @@ def define_optimization(optimizer, loss, model_parameters):
     loss function and model parameters."""
     return optimizer.minimize(loss, var_list=list(model_parameters.values()))
 
-def split_data(X, y, validation_split):
-    n_samples = X.shape[0]
-    X_shuffled, y_shuffled = shuffle_data(X, y)
-    n_validation_indices = np.floor(validation_split * n_samples).astype(int)
-    X_val, y_val = X_shuffled[:n_validation_indices], y_shuffled[:n_validation_indices] if y is not None else None
-    X_train, y_train = X_shuffled[n_validation_indices:], y_shuffled[n_validation_indices:] if y is not None else None
-    return X_train, y_train, X_val, y_val
-
 def shuffle_data(X, y):
     """Shuffle the data."""
     epoch_shuffled_indices = np.random.permutation(range(X.shape[0]))
@@ -206,18 +198,14 @@ class BaseGAN:
         if is_tensor:
             return task_total / n_samples
 
-    def _logging_info(self, X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps):
+    def _logging_info(self, X, y, epoch, batch_size, logging_options, logging_steps):
         """Private method that logs the clasification accuracy during training 
         and/or plots a sample of the generated image data."""
         if epoch % logging_steps == 0:
             if 'print_accuracy' in logging_options:
-                accuracy_mixed_training_data = self._run_epoch_task(X_train, y_train, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
-                accuracy_generated_data = self._run_epoch_task(X_train, y_train, batch_size, self.accuracy_generated_data, self.generator_placeholders)
-                accuracy_mixed_validation_data = None
-                if X_val.size > 0:
-                    accuracy_mixed_validation_data = self._run_epoch_task(X_val, y_val, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
-                accuracy_types = {'mixed training': accuracy_mixed_training_data, 'mixed validation': accuracy_mixed_validation_data, 'generated': accuracy_generated_data}
-                accuracy_types = {key:value for key, value in accuracy_types.items() if value is not None}
+                accuracy_mixed_training_data = self._run_epoch_task(X, y, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
+                accuracy_generated_data = self._run_epoch_task(X, y, batch_size, self.accuracy_generated_data, self.generator_placeholders)
+                accuracy_types = {'mixed training': accuracy_mixed_training_data, 'generated': accuracy_generated_data}
                 msg = 'Epoch: {}'
                 for key in accuracy_types.keys():
                     msg += '\nDiscriminator accuracy on ' + key + ' data: {:.3f}'
@@ -270,14 +258,12 @@ class GAN(BaseGAN):
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
-        X_train, y_train, X_val, y_val = split_data(X, None, validation_split)
-        super()._initialize_training_parameters(X_train, y_train, batch_size)
+        super()._initialize_training_parameters(X, None, batch_size)
         for epoch in range(nb_epoch):
-            X_train, y_train = shuffle_data(X_train, y_train)
             for _ in range(discriminator_steps):
-                self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
-            self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, None, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps)
+                self._run_epoch_task(X, None, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
+            self._run_epoch_task(X, None, batch_size, self.generator_optimization, self.generator_placeholders)
+            self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps)
         return self
             
     def generate_samples(self, n_samples):
@@ -320,14 +306,12 @@ class CGAN(BaseGAN):
         of the mini batch and discriminator_steps as the number of discriminator 
         gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
-        X_train, y_train, X_val, y_val = split_data(X, y, validation_split)
-        super()._initialize_training_parameters(X_train, y_train, batch_size)
+        super()._initialize_training_parameters(X, y, batch_size)
         for epoch in range(nb_epoch):
-            X_train, y_train = shuffle_data(X_train, y_train)
             for _ in range(discriminator_steps):
-                self._run_epoch_task(X_train, y_train, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
-            self._run_epoch_task(X_train, y_train, batch_size, self.generator_optimization, self.generator_placeholders)
-            self._logging_info(X, y, X_train, y_train, X_val, y_val, logging_options, epoch, batch_size, logging_steps)
+                self._run_epoch_task(X, y, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
+            self._run_epoch_task(X, y, batch_size, self.generator_optimization, self.generator_placeholders)
+            self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps)
         return self
 
     def generate_samples(self, n_samples, class_label):
