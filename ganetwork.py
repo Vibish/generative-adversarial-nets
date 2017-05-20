@@ -10,6 +10,7 @@ Adversarial Networks (CGAN).
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from math import sqrt
 
 
@@ -204,22 +205,22 @@ class BaseGAN:
                 for key in accuracy_types.keys():
                     msg += '\nDiscriminator accuracy on ' + key + ' data: {:.3f}'
                 print((msg + '\n').format(epoch, *accuracy_types.values()))
-        
+            
             if 'plot_images' in logging_options:
                 n_samples = kwargs['n_samples']
                 if self.n_y_features == 0:
                     X_generated = self.generate_samples(n_samples)
                 else:
                     X_generated = self.generate_samples(n_samples, kwargs['class_label'])
-                plt.rcParams['figure.figsize'] = (50, 50)
-                fig, ax = plt.subplots(1, n_samples)
+                fig = plt.figure(figsize=(20, 20))
+                gs = gridspec.GridSpec(1, n_samples)
                 img_dim = int(sqrt(self.n_X_features))
-                X_img = X_generated.reshape(n_samples, img_dim, -1)
-                for ind in range(n_samples):    
-                    ax[ind].imshow(X_img[ind], cmap='gray_r')
-                    ax[ind].axis('off')
+                for ind in range(n_samples):
+                    ax = plt.subplot(gs[ind])
+                    plt.axis('off')
+                    plt.imshow(X_generated[ind].reshape(img_dim, -1), cmap='gray_r')
                 plt.show()
-
+                
 
 class GAN(BaseGAN):
     """
