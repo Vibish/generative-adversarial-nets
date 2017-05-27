@@ -1,7 +1,7 @@
 Generative Adversarial Networks
 ===============================
 
-A TensorFlow implementation of Generative Adversarial Networks (GANS) and Conditional Generative Adversarial Networks (CGANs).
+A TensorFlow implementation of Generative Adversarial Networks (GAN) and Conditional Generative Adversarial Networks (CGAN).
 
 Prerequisites
 =============
