@@ -317,7 +317,7 @@ class CGAN(BaseGAN):
         return self
 
     def generate_samples(self, n_samples, class_label):
-        """Generates n_samples number from the generator 
+        """Generates n_samples from the generator 
         conditioned on the class_label."""
         input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
