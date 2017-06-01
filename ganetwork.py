@@ -55,9 +55,10 @@ def output_logits_tensor(input_tensor, model_layers, model_parameters):
             output_tensor = logit_tensor
     return output_tensor
 
-def sample_Z(n_samples, n_features):
+def sample_Z(n_samples, n_features, random_state):
     """Samples the elements of a (n_samples, n_features) shape 
     matrix from a uniform distribution in the [-1, 1] interval."""
+    np.random.seed(random_state)
     return np.random.uniform(-1., 1., size=[n_samples, n_features]).astype(np.float32)
 
 def sample_y(n_samples, n_y_features, class_label):
@@ -269,9 +270,9 @@ class GAN(BaseGAN):
             self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
             
-    def generate_samples(self, n_samples):
+    def generate_samples(self, n_samples, random_state=None):
         """Generates n_samples from the generator."""
-        input_tensor = sample_Z(n_samples, self.n_Z_features)
+        input_tensor = sample_Z(n_samples, self.n_Z_features, random_state)
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
@@ -317,10 +318,10 @@ class CGAN(BaseGAN):
             self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
 
-    def generate_samples(self, n_samples, class_label):
+    def generate_samples(self, n_samples, class_label, random_state=None):
         """Generates n_samples from the generator 
         conditioned on the class_label."""
-        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
+        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features, random_state), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
