@@ -122,15 +122,16 @@ def mini_batch_indices_generator(n_samples, batch_size):
 class BaseGAN:
     """Base class for GANs and CGANs."""  
 
-    def __init__(self, n_Z_features,
-                       discriminator_hidden_layers, 
-                       generator_hidden_layers, 
-                       discriminator_optimizer=OPTIMIZER,  
-                       discriminator_weights_initilization_choice='xavier',
-                       discriminator_bias_initilization_choice='zeros',
-                       generator_optimizer=OPTIMIZER, 
-                       generator_weights_initilization_choice='xavier',
-                       generator_bias_initilization_choice='zeros'):
+    def __init__(self,
+                 n_Z_features,
+                 discriminator_hidden_layers, 
+                 generator_hidden_layers, 
+                 discriminator_optimizer=OPTIMIZER,  
+                 discriminator_weights_initilization_choice='xavier',
+                 discriminator_bias_initilization_choice='zeros',
+                 generator_optimizer=OPTIMIZER, 
+                 generator_weights_initilization_choice='xavier',
+                 generator_bias_initilization_choice='zeros'):
         self.n_Z_features = n_Z_features
         self.discriminator_hidden_layers = discriminator_hidden_layers
         self.generator_hidden_layers = generator_hidden_layers
