@@ -310,6 +310,8 @@ class CGAN(BaseGAN):
         of the mini batch and discriminator_steps as the number of discriminator 
         gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
+        if len(y.shape) == 1:
+            y = y.reshape(-1, 1)
         super()._initialize_training_parameters(X, y, batch_size)
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
