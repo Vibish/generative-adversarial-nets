@@ -152,8 +152,8 @@ class BaseGAN:
         self.discriminator_hidden_layers_ = self.discriminator_hidden_layers if self.discriminator_hidden_layers is not None else [(SCALE_FACTORS[1] * self.n_X_features_, tf.nn.relu)]
         self.generator_hidden_layers_ = self.generator_hidden_layers if self.generator_hidden_layers is not None else [(SCALE_FACTORS[2] * self.n_X_features_, tf.nn.relu)]
 
-        self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(1, None)]
-        self.generator_layers_ = [(self.n_Z_features + self.n_y_features_, None)] + self.generator_hidden_layers + [(self.n_X_features_, None)]
+        self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers_ + [(1, None)]
+        self.generator_layers_ = [(self.n_Z_features_ + self.n_y_features_, None)] + self.generator_hidden_layers_ + [(self.n_X_features_, None)]
 
         self.y_placeholder_ = tf.placeholder(tf.float32, [None, self.n_y_features_]) if y is not None else None
         self.X_placeholder_, self.discriminator_parameters = initialize_model(self.discriminator_layers_, self.n_y_features_, self.discriminator_initializer[0], self.discriminator_initializer[1])
@@ -192,7 +192,7 @@ class BaseGAN:
             mb_indices = next(mini_batch_indices)
             adjusted_batch_size = mb_indices[1] - mb_indices[0]
             X_batch, y_batch = create_mini_batch_data(X_epoch, y_epoch, mb_indices)
-            feed_dict = {self.X_placeholder_: X_batch, self.Z_placeholder_: sample_Z(adjusted_batch_size, self.n_Z_features, None), self.y_placeholder_: y_batch}
+            feed_dict = {self.X_placeholder_: X_batch, self.Z_placeholder_: sample_Z(adjusted_batch_size, self.n_Z_features_, None), self.y_placeholder_: y_batch}
             feed_dict = {placeholder: data for placeholder, data in feed_dict.items() if placeholder in placeholders}
             task_mb = self.sess_.run(task, feed_dict=feed_dict)
             if is_tensor:
@@ -272,7 +272,7 @@ class GAN(BaseGAN):
             
     def generate_samples(self, n_samples, random_state=None):
         """Generates n_samples from the generator."""
-        input_tensor = sample_Z(n_samples, self.n_Z_features, random_state)
+        input_tensor = sample_Z(n_samples, self.n_Z_features_, random_state)
         logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
         generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
         return generated_samples
@@ -319,7 +319,7 @@ class CGAN(BaseGAN):
     def generate_samples(self, n_samples, class_label, random_state=None):
         """Generates n_samples from the generator 
         conditioned on the class_label."""
-        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features, random_state), sample_y(n_samples, self.n_y_features_, class_label)], axis=1)
+        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features_, random_state), sample_y(n_samples, self.n_y_features_, class_label)], axis=1)
         logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
         generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
         return generated_samples
