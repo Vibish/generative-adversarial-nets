@@ -127,9 +127,9 @@ class BaseGAN:
     """Base class for GANs and CGANs."""  
 
     def __init__(self,
-                 n_Z_features,
-                 discriminator_hidden_layers, 
-                 generator_hidden_layers, 
+                 n_Z_features=None,
+                 discriminator_hidden_layers=None, 
+                 generator_hidden_layers=None, 
                  discriminator_optimizer=OPTIMIZER,  
                  discriminator_initializer=['xavier', 'zeros'],
                  generator_optimizer=OPTIMIZER, 
