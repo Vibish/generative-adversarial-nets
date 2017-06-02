@@ -143,7 +143,7 @@ class BaseGAN:
         self.discriminator_initializer = discriminator_initializer
         self.generator_initializer = generator_initializer
 
-    def _initialize_training_parameters(self, X, y, batch_size):
+    def _initialize_training_parameters(self, X, y):
         """Private method that initializes the GAN training parameters."""
         self.n_X_features_ = X.shape[1]
         self.n_y_features_ = y.shape[1] if y is not None else 0
@@ -151,7 +151,7 @@ class BaseGAN:
         self.n_Z_features_ = self.n_Z_features if self.n_Z_features is not None else SCALE_FACTORS[0] * self.n_X_features_
         self.discriminator_hidden_layers_ = self.discriminator_hidden_layers if self.discriminator_hidden_layers is not None else [(SCALE_FACTORS[1] * self.n_X_features_, tf.nn.relu)]
         self.generator_hidden_layers_ = self.generator_hidden_layers if self.generator_hidden_layers is not None else [(SCALE_FACTORS[2] * self.n_X_features_, tf.nn.relu)]
-
+        
         self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers_ + [(1, None)]
         self.generator_layers_ = [(self.n_Z_features_ + self.n_y_features_, None)] + self.generator_hidden_layers_ + [(self.n_X_features_, None)]
 
@@ -262,7 +262,7 @@ class GAN(BaseGAN):
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
-        super()._initialize_training_parameters(X, None, batch_size)
+        super()._initialize_training_parameters(X, None)
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, None, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
@@ -308,7 +308,7 @@ class CGAN(BaseGAN):
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
         if len(y.shape) == 1:
             y = y.reshape(-1, 1)
-        super()._initialize_training_parameters(X, y, batch_size)
+        super()._initialize_training_parameters(X, y)
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, y, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
