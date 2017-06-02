@@ -35,13 +35,13 @@ def initialize_model_parameters(n_input_units, n_output_units, initializer):
         initializer = initialization_types[initializer]
     return initializer
 
-def initialize_model(model_layers, input_layer_correction, weights_initialization_choice, bias_initialization_choice):
+def initialize_model(model_layers, input_layer_correction, weights_initializer, bias_initializer):
     """Initializes variables for the model parameters and 
     a placeholder for the input data."""
     model_parameters = {}
     for layer_index in range(len(model_layers) - 1):
-        model_parameters['W' + str(layer_index)] = tf.Variable(initialize_model_parameters(model_layers[layer_index][0], model_layers[layer_index + 1][0], weights_initialization_choice))
-        model_parameters['b' + str(layer_index)] = tf.Variable(initialize_model_parameters(model_layers[layer_index + 1][0], None, bias_initialization_choice))
+        model_parameters['W' + str(layer_index)] = tf.Variable(initialize_model_parameters(model_layers[layer_index][0], model_layers[layer_index + 1][0], weights_initializer))
+        model_parameters['b' + str(layer_index)] = tf.Variable(initialize_model_parameters(model_layers[layer_index + 1][0], None, bias_initializer))
     input_data_placeholder = tf.placeholder(tf.float32, shape=[None, model_layers[0][0] - input_layer_correction])
     return input_data_placeholder, model_parameters
     
