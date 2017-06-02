@@ -17,6 +17,7 @@ from math import sqrt
 
 
 OPTIMIZER = tf.train.AdamOptimizer()
+SCALE_FACTORS = [2, 3, 5]
 
 def bind_columns(tensor1, tensor2):
     """Column binds the tensors if the second tensor exists, 
@@ -146,6 +147,10 @@ class BaseGAN:
         """Private method that initializes the GAN training parameters."""
         self.n_X_features_ = X.shape[1]
         self.n_y_features_ = y.shape[1] if y is not None else 0
+
+        self.n_Z_features_ = self.n_Z_features if self.n_Z_features is not None else SCALE_FACTORS[0] * self.n_X_features_
+        self.discriminator_hidden_layers_ = self.discriminator_hidden_layers if self.discriminator_hidden_layers is not None else [(SCALE_FACTORS[1] * self.n_X_features_, tf.nn.relu)]
+        self.generator_hidden_layers_ = self.generator_hidden_layers if self.generator_hidden_layers is not None else [(SCALE_FACTORS[2] * self.n_X_features_, tf.nn.relu)]
 
         self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(1, None)]
         self.generator_layers_ = [(self.n_Z_features + self.n_y_features_, None)] + self.generator_hidden_layers + [(self.n_X_features_, None)]
