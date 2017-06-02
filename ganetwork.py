@@ -12,6 +12,7 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from sklearn.utils import check_random_state
 from math import sqrt
 
 
@@ -55,10 +56,11 @@ def output_logits_tensor(input_tensor, model_layers, model_parameters):
             output_tensor = logit_tensor
     return output_tensor
 
-def sample_Z(n_samples, n_features):
+def sample_Z(n_samples, n_features, random_state):
     """Samples the elements of a (n_samples, n_features) shape 
     matrix from a uniform distribution in the [-1, 1] interval."""
-    return np.random.uniform(-1., 1., size=[n_samples, n_features]).astype(np.float32)
+    random_state = check_random_state(random_state)
+    return random_state.uniform(-1., 1., size=[n_samples, n_features]).astype(np.float32)
 
 def sample_y(n_samples, n_y_features, class_label):
     """Returns a matrix of (n_samples, n_y_features) shape using 
@@ -187,7 +189,7 @@ class BaseGAN:
             mb_indices = next(mini_batch_indices)
             adjusted_batch_size = mb_indices[1] - mb_indices[0]
             X_batch, y_batch = create_mini_batch_data(X_epoch, y_epoch, mb_indices)
-            feed_dict = {self.X_placeholder: X_batch, self.Z_placeholder: sample_Z(adjusted_batch_size, self.n_Z_features), self.y_placeholder: y_batch}
+            feed_dict = {self.X_placeholder: X_batch, self.Z_placeholder: sample_Z(adjusted_batch_size, self.n_Z_features, None), self.y_placeholder: y_batch}
             feed_dict = {placeholder: data for placeholder, data in feed_dict.items() if placeholder in placeholders}
             task_mb = self.sess.run(task, feed_dict=feed_dict)
             if is_tensor:
@@ -271,8 +273,7 @@ class GAN(BaseGAN):
             
     def generate_samples(self, n_samples, random_state=None):
         """Generates n_samples from the generator."""
-        np.random.seed(random_state)
-        input_tensor = sample_Z(n_samples, self.n_Z_features)
+        input_tensor = sample_Z(n_samples, self.n_Z_features, random_state)
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
@@ -323,8 +324,7 @@ class CGAN(BaseGAN):
     def generate_samples(self, n_samples, class_label, random_state=None):
         """Generates n_samples from the generator 
         conditioned on the class_label."""
-        np.random.seed(random_state)
-        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
+        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features, random_state), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
         logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
         generated_samples = self.sess.run(tf.nn.sigmoid(logits))
         return generated_samples
