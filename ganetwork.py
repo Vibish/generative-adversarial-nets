@@ -246,10 +246,10 @@ class GAN(BaseGAN):
         The optimizer for the discriminator.
     generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
-    discriminator_initializer : str or TensorFlow tensor, default 'xavier'
-        The initialization type of the discriminator's weights.
-    generator_initializer : str or TensorFlow tensor, default 'xavier'
-        The initialization type of the discriminator's weights.
+    discriminator_initializer : list of strings or TensorFlow tensor, default ['xavier', 'zeros']
+        The initialization type of the discriminator's parameters.
+    generator_initializer : list of strings or TensorFlow tensor, default ['xavier', 'zeros']
+        The initialization type of the generator's parameters.
     """
 
     def train(self, X, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
@@ -289,10 +289,10 @@ class CGAN(BaseGAN):
         The optimizer for the discriminator.
     generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
-    discriminator_initializer : str or TensorFlow tensor, default 'xavier'
-        The initialization type of the discriminator's weights.
-    generator_initializer : str or TensorFlow tensor, default 'xavier'
-        The initialization type of the discriminator's weights.
+    discriminator_initializer : list of strings or TensorFlow tensor, default ['xavier', 'zeros']
+        The initialization type of the discriminator's parameters.
+    generator_initializer : list of strings or TensorFlow tensor, default ['xavier', 'zeros']
+        The initialization type of the generator's parameters.
     """
 
     def train(self, X, y, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
