@@ -148,7 +148,7 @@ class BaseGAN:
         self.n_y_features_ = y.shape[1] if y is not None else 0
 
         self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(1, None)]
-        self.generator_layers_ = [(self.n_Z_features + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(self.n_X_features_, None)]
+        self.generator_layers_ = [(self.n_Z_features + self.n_y_features_, None)] + self.generator_hidden_layers + [(self.n_X_features_, None)]
 
         self.y_placeholder_ = tf.placeholder(tf.float32, [None, self.n_y_features_]) if y is not None else None
         self.X_placeholder_, self.discriminator_parameters = initialize_model(self.discriminator_layers_, self.n_y_features_, self.discriminator_initializer[0], self.discriminator_initializer[1])
