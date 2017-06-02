@@ -144,34 +144,34 @@ class BaseGAN:
 
     def _initialize_training_parameters(self, X, y, batch_size):
         """Private method that initializes the GAN training parameters."""
-        self.n_X_features = X.shape[1]
-        self.n_y_features = y.shape[1] if y is not None else 0
+        self.n_X_features_ = X.shape[1]
+        self.n_y_features_ = y.shape[1] if y is not None else 0
 
-        self.discriminator_layers = [(self.n_X_features + self.n_y_features, None)] + self.discriminator_hidden_layers + [(1, None)]
-        self.generator_layers = [(self.n_Z_features + self.n_y_features, None)] + self.discriminator_hidden_layers + [(self.n_X_features, None)]
+        self.discriminator_layers_ = [(self.n_X_features_ + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(1, None)]
+        self.generator_layers_ = [(self.n_Z_features + self.n_y_features_, None)] + self.discriminator_hidden_layers + [(self.n_X_features_, None)]
 
-        self.y_placeholder = tf.placeholder(tf.float32, [None, self.n_y_features]) if y is not None else None
-        self.X_placeholder, self.discriminator_parameters = initialize_model(self.discriminator_layers, self.n_y_features, self.discriminator_initializer[0], self.discriminator_initializer[1])
-        self.Z_placeholder, self.generator_parameters = initialize_model(self.generator_layers, self.n_y_features, self.generator_initializer[0], self.generator_initializer[1])
+        self.y_placeholder_ = tf.placeholder(tf.float32, [None, self.n_y_features_]) if y is not None else None
+        self.X_placeholder_, self.discriminator_parameters = initialize_model(self.discriminator_layers_, self.n_y_features_, self.discriminator_initializer[0], self.discriminator_initializer[1])
+        self.Z_placeholder_, self.generator_parameters = initialize_model(self.generator_layers_, self.n_y_features_, self.generator_initializer[0], self.generator_initializer[1])
         
-        generator_logits = output_logits_tensor(bind_columns(self.Z_placeholder, self.y_placeholder), self.generator_layers, self.generator_parameters)
-        discriminator_logits_real = output_logits_tensor(bind_columns(self.X_placeholder, self.y_placeholder), self.discriminator_layers, self.discriminator_parameters)
-        discriminator_logits_generated = output_logits_tensor(bind_columns(tf.nn.sigmoid(generator_logits), self.y_placeholder), self.discriminator_layers, self.discriminator_parameters)
+        generator_logits = output_logits_tensor(bind_columns(self.Z_placeholder_, self.y_placeholder_), self.generator_layers_, self.generator_parameters)
+        discriminator_logits_real = output_logits_tensor(bind_columns(self.X_placeholder_, self.y_placeholder_), self.discriminator_layers_, self.discriminator_parameters)
+        discriminator_logits_generated = output_logits_tensor(bind_columns(tf.nn.sigmoid(generator_logits), self.y_placeholder_), self.discriminator_layers_, self.discriminator_parameters)
         
-        self.discriminator_loss_mixed_data = cross_entropy(discriminator_logits_real, True) + cross_entropy(discriminator_logits_generated, False)
-        self.discriminator_loss_generated_data = cross_entropy(discriminator_logits_generated, True)
+        self.discriminator_loss_mixed_data_ = cross_entropy(discriminator_logits_real, True) + cross_entropy(discriminator_logits_generated, False)
+        self.discriminator_loss_generated_data_ = cross_entropy(discriminator_logits_generated, True)
 
-        self.discriminator_optimization = define_optimization(self.discriminator_optimizer, self.discriminator_loss_mixed_data, self.discriminator_parameters)
-        self.generator_optimization = define_optimization(self.generator_optimizer, self.discriminator_loss_generated_data, self.generator_parameters)
+        self.discriminator_optimization_ = define_optimization(self.discriminator_optimizer, self.discriminator_loss_mixed_data_, self.discriminator_parameters)
+        self.generator_optimization_ = define_optimization(self.generator_optimizer, self.discriminator_loss_generated_data_, self.generator_parameters)
 
-        self.accuracy_mixed_data = 0.5 * accuracy(discriminator_logits_real, True) + 0.5 * accuracy(discriminator_logits_generated, False)
-        self.accuracy_generated_data = accuracy(discriminator_logits_generated, True)
+        self.accuracy_mixed_data_ = 0.5 * accuracy(discriminator_logits_real, True) + 0.5 * accuracy(discriminator_logits_generated, False)
+        self.accuracy_generated_data_ = accuracy(discriminator_logits_generated, True)
 
-        self.discriminator_placeholders = [placeholder for placeholder in [self.X_placeholder, self.Z_placeholder, self.y_placeholder] if placeholder is not None]
-        self.generator_placeholders = [placeholder for placeholder in [self.Z_placeholder, self.y_placeholder] if placeholder is not None]
+        self.discriminator_placeholders_ = [placeholder for placeholder in [self.X_placeholder_, self.Z_placeholder_, self.y_placeholder_] if placeholder is not None]
+        self.generator_placeholders_ = [placeholder for placeholder in [self.Z_placeholder_, self.y_placeholder_] if placeholder is not None]
 
-        self.sess = tf.Session()
-        tf.global_variables_initializer().run(session=self.sess)
+        self.sess_ = tf.Session()
+        tf.global_variables_initializer().run(session=self.sess_)
 
     def _run_epoch_task(self, X, y, batch_size, task, placeholders):
         """Private method that returns the loss function value for an 
@@ -187,9 +187,9 @@ class BaseGAN:
             mb_indices = next(mini_batch_indices)
             adjusted_batch_size = mb_indices[1] - mb_indices[0]
             X_batch, y_batch = create_mini_batch_data(X_epoch, y_epoch, mb_indices)
-            feed_dict = {self.X_placeholder: X_batch, self.Z_placeholder: sample_Z(adjusted_batch_size, self.n_Z_features, None), self.y_placeholder: y_batch}
+            feed_dict = {self.X_placeholder_: X_batch, self.Z_placeholder_: sample_Z(adjusted_batch_size, self.n_Z_features, None), self.y_placeholder_: y_batch}
             feed_dict = {placeholder: data for placeholder, data in feed_dict.items() if placeholder in placeholders}
-            task_mb = self.sess.run(task, feed_dict=feed_dict)
+            task_mb = self.sess_.run(task, feed_dict=feed_dict)
             if is_tensor:
                 task_total += task_mb * adjusted_batch_size
         if is_tensor:
@@ -200,8 +200,8 @@ class BaseGAN:
         and/or plots a sample of the generated image data."""
         if epoch % logging_steps == 0:
             if 'print_accuracy' in logging_options:
-                accuracy_mixed_data = self._run_epoch_task(X, y, batch_size, self.accuracy_mixed_data, self.discriminator_placeholders)
-                accuracy_generated_data = self._run_epoch_task(X, y, batch_size, self.accuracy_generated_data, self.generator_placeholders)
+                accuracy_mixed_data = self._run_epoch_task(X, y, batch_size, self.accuracy_mixed_data_, self.discriminator_placeholders_)
+                accuracy_generated_data = self._run_epoch_task(X, y, batch_size, self.accuracy_generated_data_, self.generator_placeholders_)
                 accuracy_types = {'mixed': accuracy_mixed_data, 'generated': accuracy_generated_data}
                 msg = 'Epoch: {}'
                 for key in accuracy_types.keys():
@@ -210,13 +210,13 @@ class BaseGAN:
             
             if 'plot_images' in logging_options or 'save_images' in logging_options:
                 n_samples = kwargs['n_samples']
-                if self.n_y_features == 0:
+                if self.n_y_features_ == 0:
                     X_generated = self.generate_samples(n_samples)
                 else:
                     X_generated = self.generate_samples(n_samples, kwargs['class_label'])
                 fig = plt.figure(figsize=(20, 20))
                 gs = gridspec.GridSpec(1, n_samples)
-                img_dim = int(sqrt(self.n_X_features))
+                img_dim = int(sqrt(self.n_X_features_))
                 for ind in range(n_samples):
                     ax = plt.subplot(gs[ind])
                     plt.axis('off')
@@ -260,16 +260,16 @@ class GAN(BaseGAN):
         super()._initialize_training_parameters(X, None, batch_size)
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
-                self._run_epoch_task(X, None, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
-            self._run_epoch_task(X, None, batch_size, self.generator_optimization, self.generator_placeholders)
+                self._run_epoch_task(X, None, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
+            self._run_epoch_task(X, None, batch_size, self.generator_optimization_, self.generator_placeholders_)
             self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
             
     def generate_samples(self, n_samples, random_state=None):
         """Generates n_samples from the generator."""
         input_tensor = sample_Z(n_samples, self.n_Z_features, random_state)
-        logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
-        generated_samples = self.sess.run(tf.nn.sigmoid(logits))
+        logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
+        generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
         return generated_samples
 
 
@@ -306,16 +306,16 @@ class CGAN(BaseGAN):
         super()._initialize_training_parameters(X, y, batch_size)
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
-                self._run_epoch_task(X, y, batch_size, self.discriminator_optimization, self.discriminator_placeholders)
-            self._run_epoch_task(X, y, batch_size, self.generator_optimization, self.generator_placeholders)
+                self._run_epoch_task(X, y, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
+            self._run_epoch_task(X, y, batch_size, self.generator_optimization_, self.generator_placeholders_)
             self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
 
     def generate_samples(self, n_samples, class_label, random_state=None):
         """Generates n_samples from the generator 
         conditioned on the class_label."""
-        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features, random_state), sample_y(n_samples, self.n_y_features, class_label)], axis=1)
-        logits = output_logits_tensor(input_tensor, self.generator_layers, self.generator_parameters)
-        generated_samples = self.sess.run(tf.nn.sigmoid(logits))
+        input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features, random_state), sample_y(n_samples, self.n_y_features_, class_label)], axis=1)
+        logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
+        generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
         return generated_samples
                 
