@@ -18,6 +18,8 @@ from math import sqrt
 
 OPTIMIZER = tf.train.AdamOptimizer()
 SCALE_FACTORS = [2, 3, 5]
+NB_EPOCHS = 1000
+BATCH_RATIO = 100
 
 def bind_columns(tensor1, tensor2):
     """Column binds the tensors if the second tensor exists, 
@@ -145,8 +147,12 @@ class BaseGAN:
 
     def _initialize_training_parameters(self, X, y):
         """Private method that initializes the GAN training parameters."""
+        self.n_X_samples_ = X.shape[0]
         self.n_X_features_ = X.shape[1]
         self.n_y_features_ = y.shape[1] if y is not None else 0
+
+        self.nb_epoch_ = NB_EPOCHS
+        self.batch_size_ = (self.n_X_samples_ // BATCH_RATIO) if self.n_X_samples_ > BATCH_RATIO else 1 
 
         self.n_Z_features_ = self.n_Z_features if self.n_Z_features is not None else SCALE_FACTORS[0] * self.n_X_features_
         self.discriminator_hidden_layers_ = self.discriminator_hidden_layers if self.discriminator_hidden_layers is not None else [(SCALE_FACTORS[1] * self.n_X_features_, tf.nn.relu)]
@@ -263,6 +269,10 @@ class GAN(BaseGAN):
         of discriminator gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
         super()._initialize_training_parameters(X, None)
+        if nb_epoch is None:
+            nb_epoch = self.nb_epoch_
+        if batch_size is None:
+            batch_size = self.batch_size_
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, None, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
@@ -309,6 +319,10 @@ class CGAN(BaseGAN):
         if len(y.shape) == 1:
             y = y.reshape(-1, 1)
         super()._initialize_training_parameters(X, y)
+        if nb_epoch is None:
+            nb_epoch = self.nb_epoch_
+        if batch_size is None:
+            batch_size = self.batch_size_
         for epoch in range(nb_epoch):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, y, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
