@@ -131,20 +131,20 @@ class BaseGAN:
                  discriminator_hidden_layers, 
                  generator_hidden_layers, 
                  discriminator_optimizer=OPTIMIZER,  
-                 discriminator_weights_initilization_choice='xavier',
-                 discriminator_bias_initilization_choice='zeros',
+                 discriminator_weights_initializer='xavier',
+                 discriminator_bias_initializer='zeros',
                  generator_optimizer=OPTIMIZER, 
-                 generator_weights_initilization_choice='xavier',
-                 generator_bias_initilization_choice='zeros'):
+                 generator_weights_initializer='xavier',
+                 generator_bias_initializer='zeros'):
         self.n_Z_features = n_Z_features
         self.discriminator_hidden_layers = discriminator_hidden_layers
         self.generator_hidden_layers = generator_hidden_layers
         self.discriminator_optimizer = discriminator_optimizer
         self.generator_optimizer = generator_optimizer
-        self.discriminator_weights_initilization_choice = discriminator_weights_initilization_choice
-        self.discriminator_bias_initilization_choice = discriminator_bias_initilization_choice
-        self.generator_weights_initilization_choice = generator_weights_initilization_choice
-        self.generator_bias_initilization_choice = generator_bias_initilization_choice
+        self.discriminator_weights_initializer = discriminator_weights_initializer
+        self.discriminator_bias_initializer = discriminator_bias_initializer
+        self.generator_weights_initializer = generator_weights_initializer
+        self.generator_bias_initializer = generator_bias_initializer
 
     def _initialize_training_parameters(self, X, y, batch_size):
         """Private method that initializes the GAN training parameters."""
@@ -155,8 +155,8 @@ class BaseGAN:
         self.generator_layers = [(self.n_Z_features + self.n_y_features, None)] + self.discriminator_hidden_layers + [(self.n_X_features, None)]
 
         self.y_placeholder = tf.placeholder(tf.float32, [None, self.n_y_features]) if y is not None else None
-        self.X_placeholder, self.discriminator_parameters = initialize_model(self.discriminator_layers, self.n_y_features, self.discriminator_weights_initilization_choice, self.discriminator_bias_initilization_choice)
-        self.Z_placeholder, self.generator_parameters = initialize_model(self.generator_layers, self.n_y_features, self.generator_weights_initilization_choice, self.generator_bias_initilization_choice)
+        self.X_placeholder, self.discriminator_parameters = initialize_model(self.discriminator_layers, self.n_y_features, self.discriminator_weights_initializer, self.discriminator_bias_initializer)
+        self.Z_placeholder, self.generator_parameters = initialize_model(self.generator_layers, self.n_y_features, self.generator_weights_initializer, self.generator_bias_initializer)
         
         generator_logits = output_logits_tensor(bind_columns(self.Z_placeholder, self.y_placeholder), self.generator_layers, self.generator_parameters)
         discriminator_logits_real = output_logits_tensor(bind_columns(self.X_placeholder, self.y_placeholder), self.discriminator_layers, self.discriminator_parameters)
@@ -250,13 +250,13 @@ class GAN(BaseGAN):
         The optimizer for the discriminator.
     generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
-    discriminator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+    discriminator_weights_initializer : str or TensorFlow tensor, default 'xavier'
         The initialization type of the discriminator's weights.
-    discriminator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+    discriminator_bias_initializer : str or TensorFlow tensor, default 'zeros'
         The initialization type of the discriminator's bias.
-    generator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+    generator_weights_initializer : str or TensorFlow tensor, default 'xavier'
         The initialization type of the discriminator's weights.
-    generator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+    generator_bias_initializer : str or TensorFlow tensor, default 'zeros'
         The initialization type of the generator's bias.
     """
 
@@ -297,13 +297,13 @@ class CGAN(BaseGAN):
         The optimizer for the discriminator.
     generator_optimizer : TensorFlow optimizer, default AdamOptimizer
         The optimizer for the generator.
-    discriminator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+    discriminator_weights_initializer : str or TensorFlow tensor, default 'xavier'
         The initialization type of the discriminator's weights.
-    discriminator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+    discriminator_bias_initializer : str or TensorFlow tensor, default 'zeros'
         The initialization type of the discriminator's bias.
-    generator_weights_initilization_choice : str or TensorFlow tensor, default 'xavier'
+    generator_weights_initializer : str or TensorFlow tensor, default 'xavier'
         The initialization type of the discriminator's weights.
-    generator_bias_initilization_choice : str or TensorFlow tensor, default 'zeros'
+    generator_bias_initializer : str or TensorFlow tensor, default 'zeros'
         The initialization type of the generator's bias.
     """
 
