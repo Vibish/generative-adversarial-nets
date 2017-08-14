@@ -7,7 +7,7 @@ from ganetwork import GAN
 
 # Load MNIST data
 mnist = fetch_mldata('MNIST original', data_home='.')
-X, y = mnist.data, label_binarize(mnist.target, classes=np.unique(mnist.target))
+X, y = mnist.data, mnist.target
 
 # GAN
 gan = GAN(

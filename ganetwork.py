@@ -9,10 +9,13 @@ Adversarial Networks (CGAN).
 
 import os
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from sklearn.utils import check_random_state
+from sklearn.utils.validation import check_array
+from sklearn.preprocessing import MinMaxScaler, label_binarize
 from math import sqrt
 
 
@@ -145,6 +148,23 @@ class BaseGAN:
         self.discriminator_initializer = discriminator_initializer
         self.generator_initializer = generator_initializer
 
+    def _normalize_training_data(self, X, y):
+        """Private method that normalizes the training data."""
+        if y is not None:
+            if isinstance(y, pd.core.series.Series):
+                y = y.as_matrix()
+            if len(y.shape) == 1:
+                y = y.reshape(-1, 1)
+            unique_y = np.unique(y)
+            if len(unique_y) > 2:
+                y = label_binarize(y, classes = unique_y)
+            y = check_array(y)
+        X = check_array(X)
+        if np.amin(X) < 0 or np.amax(X) > 1:
+            self.scaler_ = MinMaxScaler().fit(X)
+            X = self.scaler_.transform(X)
+        return X, y
+
     def _initialize_training_parameters(self, X, y):
         """Private method that initializes the GAN training parameters."""
         self.n_X_samples_ = X.shape[0]
@@ -268,6 +288,7 @@ class GAN(BaseGAN):
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
+        X, y = self._normalize_training_data(X, None)
         super()._initialize_training_parameters(X, None)
         if nb_epoch is None:
             nb_epoch = self.nb_epoch_
@@ -285,6 +306,8 @@ class GAN(BaseGAN):
         input_tensor = sample_Z(n_samples, self.n_Z_features_, random_state)
         logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
         generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
+        if hasattr(self, "scaler_"):
+            generated_samples = self.scaler_.inverse_transform(generated_samples)
         return generated_samples
 
 
@@ -316,8 +339,7 @@ class CGAN(BaseGAN):
         of the mini batch and discriminator_steps as the number of discriminator 
         gradient updates for each generator gradient update. Logging 
         options ('print_accuracy' and 'plot_images') and logging steps are included."""
-        if len(y.shape) == 1:
-            y = y.reshape(-1, 1)
+        X, y = self._normalize_training_data(X, y)
         super()._initialize_training_parameters(X, y)
         if nb_epoch is None:
             nb_epoch = self.nb_epoch_
@@ -336,5 +358,7 @@ class CGAN(BaseGAN):
         input_tensor = np.concatenate([sample_Z(n_samples, self.n_Z_features_, random_state), sample_y(n_samples, self.n_y_features_, class_label)], axis=1)
         logits = output_logits_tensor(input_tensor, self.generator_layers_, self.generator_parameters)
         generated_samples = self.sess_.run(tf.nn.sigmoid(logits))
+        if hasattr(self, "scaler_"):
+            generated_samples = self.scaler_.inverse_transform(generated_samples)
         return generated_samples
                 
