@@ -20,7 +20,7 @@ from math import sqrt
 
 
 OPTIMIZER = tf.train.AdamOptimizer()
-SCALE_FACTORS = [2, 3, 5]
+SCALE_FACTORS = [3, 3, 3]
 NB_EPOCHS = 1000
 BATCH_RATIO = 100
 
@@ -298,7 +298,8 @@ class GAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, None, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
             self._run_epoch_task(X, None, batch_size, self.generator_optimization_, self.generator_placeholders_)
-            self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps, **kwargs)
+            if logging_options is not None:
+                self._logging_info(X, None, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
             
     def generate_samples(self, n_samples, random_state=None):
@@ -349,7 +350,8 @@ class CGAN(BaseGAN):
             for _ in range(discriminator_steps):
                 self._run_epoch_task(X, y, batch_size, self.discriminator_optimization_, self.discriminator_placeholders_)
             self._run_epoch_task(X, y, batch_size, self.generator_optimization_, self.generator_placeholders_)
-            self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps, **kwargs)
+            if logging_options is not None:
+                self._logging_info(X, y, epoch, batch_size, logging_options, logging_steps, **kwargs)
         return self
 
     def generate_samples(self, n_samples, class_label, random_state=None):
