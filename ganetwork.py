@@ -152,7 +152,7 @@ class BaseGAN:
         self.n_y_features_ = y.shape[1] if y is not None else 0
 
         self.nb_epoch_ = NB_EPOCHS
-        self.batch_size_ = (self.n_X_samples_ // BATCH_RATIO) if self.n_X_samples_ > BATCH_RATIO else 1 
+        self.batch_size_ = (self.n_X_samples_ // BATCH_RATIO) if self.n_X_samples_ > BATCH_RATIO else 5 
 
         self.n_Z_features_ = self.n_Z_features if self.n_Z_features is not None else SCALE_FACTORS[0] * self.n_X_features_
         self.discriminator_hidden_layers_ = self.discriminator_hidden_layers if self.discriminator_hidden_layers is not None else [(SCALE_FACTORS[1] * self.n_X_features_, tf.nn.relu)]
@@ -263,7 +263,7 @@ class GAN(BaseGAN):
         The initialization type of the generator's parameters.
     """
 
-    def train(self, X, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
+    def train(self, X, nb_epoch=None, batch_size=None, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
         """Trains the GAN with X as the input data for nb_epoch number of epochs, 
         batch_size the size of the mini batch and discriminator_steps as the number 
         of discriminator gradient updates for each generator gradient update. Logging 
@@ -310,7 +310,7 @@ class CGAN(BaseGAN):
         The initialization type of the generator's parameters.
     """
 
-    def train(self, X, y, nb_epoch, batch_size, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
+    def train(self, X, y, nb_epoch=None, batch_size=None, discriminator_steps=1, logging_options=['print_accuracy'], logging_steps=1, **kwargs):
         """Trains the Conditional GAN with X as the input data, y the one-hot
         encoded class labels for nb_epoch number of epochs, batch_size the size 
         of the mini batch and discriminator_steps as the number of discriminator 
